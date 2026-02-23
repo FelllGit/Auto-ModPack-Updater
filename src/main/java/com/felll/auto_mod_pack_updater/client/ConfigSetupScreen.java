@@ -23,7 +23,8 @@ public class ConfigSetupScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        repoUrlBox = new EditBox(font, width / 2 - 150, height / 2 - 30, 300, 20, Component.translatable("screen.automodpackupdater.setup.repo_hint"));
+        repoUrlBox = new EditBox(font, width / 2 - 150, height / 2 - 30, 300, 20,
+                Component.translatable("screen.automodpackupdater.setup.repo_hint"));
         repoUrlBox.setHint(Component.translatable("screen.automodpackupdater.setup.repo_hint"));
         repoUrlBox.setMaxLength(500);
         repoUrlBox.setValue("");
@@ -51,9 +52,11 @@ public class ConfigSetupScreen extends Screen {
         renderBackground(guiGraphics, mouseX, mouseY, partialTick);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.drawCenteredString(font, title, width / 2, height / 2 - 60, 0xFFFFFF);
-        guiGraphics.drawCenteredString(font, Component.translatable("screen.automodpackupdater.setup.description"), width / 2, height / 2 - 50, 0xAAAAAA);
+        guiGraphics.drawCenteredString(font, Component.translatable("screen.automodpackupdater.setup.description"),
+                width / 2, height / 2 - 50, 0xAAAAAA);
         if (errorMessage != null) {
-            guiGraphics.drawCenteredString(font, Component.translatable(errorMessage), width / 2, height / 2 + 50, 0xFF5555);
+            guiGraphics.drawCenteredString(font, Component.translatable(errorMessage), width / 2, height / 2 + 50,
+                    0xFF5555);
         }
     }
 

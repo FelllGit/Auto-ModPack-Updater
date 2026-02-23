@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.felll.auto_mod_pack_updater.AutoModPackUpdater;
 import com.felll.auto_mod_pack_updater.ConfigLoader;
 import com.felll.auto_mod_pack_updater.RepoUrlParser;
-import com.felll.auto_mod_pack_updater.ModManifest;
 import com.felll.auto_mod_pack_updater.ModPackUpdater;
 import com.felll.auto_mod_pack_updater.UpdatePlan;
 
@@ -96,21 +95,20 @@ public final class ModPackUpdateHandler {
             if (statusRef != null) {
                 statusRef.set("screen.automodpackupdater.status.fetching");
             }
-            ModManifest manifest = ModPackUpdater.fetchModsFromFolder(repoUrl);
+            var mods = ModPackUpdater.fetchModsFromFolder(repoUrl);
             if (statusRef != null) {
                 statusRef.set("screen.automodpackupdater.status.computing");
             }
-            UpdatePlan plan = ModPackUpdater.computeUpdatePlan(gameDir, manifest);
+            UpdatePlan plan = ModPackUpdater.computeUpdatePlan(gameDir, mods);
             if (!plan.hasChanges()) {
                 allowTitleScreen = true;
                 mc.execute(() -> mc.setScreen(new TitleScreen(false)));
                 return;
             }
             List<String> added = new ArrayList<>(plan.getToAdd());
-            added.addAll(plan.getToUpdate());
             AtomicReference<DownloadProgress> progressRef = new AtomicReference<>();
             mc.execute(() -> mc.setScreen(new ModUpdaterScreen(added, plan.getToRemove(), false, null, progressRef)));
-            ModPackUpdater.executePlan(gameDir, repoUrl, manifest, plan, progressRef::set);
+            ModPackUpdater.executePlan(gameDir, repoUrl, mods, plan, progressRef::set);
             mc.execute(() -> mc.setScreen(new ModUpdaterScreen(added, plan.getToRemove(), true, null)));
         } catch (Exception e) {
             AutoModPackUpdater.LOGGER.error("Mod pack update failed", e);

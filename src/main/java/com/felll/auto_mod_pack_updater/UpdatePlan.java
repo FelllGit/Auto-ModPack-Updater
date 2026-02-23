@@ -6,15 +6,10 @@ import java.util.List;
 public final class UpdatePlan {
 
     private final List<String> toAdd = new ArrayList<>();
-    private final List<String> toUpdate = new ArrayList<>();
     private final List<String> toRemove = new ArrayList<>();
 
     public List<String> getToAdd() {
         return toAdd;
-    }
-
-    public List<String> getToUpdate() {
-        return toUpdate;
     }
 
     public List<String> getToRemove() {
@@ -22,6 +17,6 @@ public final class UpdatePlan {
     }
 
     public boolean hasChanges() {
-        return !toAdd.isEmpty() || !toUpdate.isEmpty() || !toRemove.isEmpty();
+        return !toAdd.isEmpty() || !toRemove.isEmpty();
     }
 }

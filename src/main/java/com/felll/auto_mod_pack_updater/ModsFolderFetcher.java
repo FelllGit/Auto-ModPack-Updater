@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,7 @@ public final class ModsFolderFetcher {
     private ModsFolderFetcher() {
     }
 
-    public static List<ModManifest.ModEntry> fetchFromFolder(String repositoryUrl) throws IOException {
+    public static List<String> fetchFromFolder(String repositoryUrl) throws IOException {
         RepoUrlParser.RepoInfo info = RepoUrlParser.parseForApi(repositoryUrl);
         if (info == null) {
             throw new IOException("Unsupported repository URL. Use GitHub, GitLab, Gitea, or Codeberg.");
@@ -34,7 +33,7 @@ public final class ModsFolderFetcher {
         };
     }
 
-    private static List<ModManifest.ModEntry> fetchFromGitHub(RepoUrlParser.RepoInfo info) throws IOException {
+    private static List<String> fetchFromGitHub(RepoUrlParser.RepoInfo info) throws IOException {
         String apiUrl = String.format("https://api.github.com/repos/%s/%s/contents/%s?ref=%s",
                 info.owner(), info.repo(), MODS_FOLDER, info.branch());
         String json = fetchUrl(apiUrl, "application/vnd.github.v3+json");
@@ -46,26 +45,10 @@ public final class ModsFolderFetcher {
             }
             return List.of();
         }
-        return parseGitHubResponse(root.getAsJsonArray());
+        return parseJarFilenames(root.getAsJsonArray(), "file");
     }
 
-    private static List<ModManifest.ModEntry> parseGitHubResponse(JsonArray items) {
-        List<ModManifest.ModEntry> mods = new ArrayList<>();
-        for (JsonElement el : items) {
-            if (el.isJsonObject()) {
-                JsonObject obj = el.getAsJsonObject();
-                String type = getStr(obj, "type");
-                String name = getStr(obj, "name");
-                if ("file".equals(type) && name != null && name.toLowerCase().endsWith(".jar")) {
-                    String url = getStr(obj, "download_url");
-                    mods.add(new ModManifest.ModEntry(name, url, null));
-                }
-            }
-        }
-        return mods;
-    }
-
-    private static List<ModManifest.ModEntry> fetchFromGitLab(RepoUrlParser.RepoInfo info) throws IOException {
+    private static List<String> fetchFromGitLab(RepoUrlParser.RepoInfo info) throws IOException {
         String projectPath = info.owner() + "%2F" + info.repo();
         String apiUrl = String.format("https://gitlab.com/api/v4/projects/%s/repository/tree?path=%s&ref=%s&per_page=100",
                 projectPath, MODS_FOLDER, info.branch());
@@ -78,28 +61,10 @@ public final class ModsFolderFetcher {
             }
             return List.of();
         }
-        String rawBase = String.format("https://gitlab.com/%s/%s/-/raw/%s/%s/",
-                info.owner(), info.repo(), info.branch(), MODS_FOLDER);
-        return parseGitLabResponse(root.getAsJsonArray(), rawBase);
+        return parseJarFilenames(root.getAsJsonArray(), "blob");
     }
 
-    private static List<ModManifest.ModEntry> parseGitLabResponse(JsonArray items, String rawBase) {
-        List<ModManifest.ModEntry> mods = new ArrayList<>();
-        for (JsonElement el : items) {
-            if (el.isJsonObject()) {
-                JsonObject obj = el.getAsJsonObject();
-                String type = getStr(obj, "type");
-                String name = getStr(obj, "name");
-                if ("blob".equals(type) && name != null && name.toLowerCase().endsWith(".jar")) {
-                    String url = rawBase + URLEncoder.encode(name, StandardCharsets.UTF_8);
-                    mods.add(new ModManifest.ModEntry(name, url, null));
-                }
-            }
-        }
-        return mods;
-    }
-
-    private static List<ModManifest.ModEntry> fetchFromGitea(RepoUrlParser.RepoInfo info) throws IOException {
+    private static List<String> fetchFromGitea(RepoUrlParser.RepoInfo info) throws IOException {
         String baseUrl = "https://" + info.host();
         String apiUrl = String.format("%s/api/v1/repos/%s/%s/contents/%s?ref=%s",
                 baseUrl, info.owner(), info.repo(), MODS_FOLDER, info.branch());
@@ -112,21 +77,18 @@ public final class ModsFolderFetcher {
             }
             return List.of();
         }
-        String rawBase = String.format("%s/%s/%s/raw/branch/%s/%s/",
-                baseUrl, info.owner(), info.repo(), info.branch(), MODS_FOLDER);
-        return parseGiteaResponse(root.getAsJsonArray(), rawBase);
+        return parseJarFilenames(root.getAsJsonArray(), "file");
     }
 
-    private static List<ModManifest.ModEntry> parseGiteaResponse(JsonArray items, String rawBase) {
-        List<ModManifest.ModEntry> mods = new ArrayList<>();
+    private static List<String> parseJarFilenames(JsonArray items, String fileType) {
+        List<String> mods = new ArrayList<>();
         for (JsonElement el : items) {
             if (el.isJsonObject()) {
                 JsonObject obj = el.getAsJsonObject();
                 String type = getStr(obj, "type");
                 String name = getStr(obj, "name");
-                if ("file".equals(type) && name != null && name.toLowerCase().endsWith(".jar")) {
-                    String url = rawBase + URLEncoder.encode(name, StandardCharsets.UTF_8);
-                    mods.add(new ModManifest.ModEntry(name, url, null));
+                if (fileType.equals(type) && name != null && name.toLowerCase().endsWith(".jar")) {
+                    mods.add(name);
                 }
             }
         }
