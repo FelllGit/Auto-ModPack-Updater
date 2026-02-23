@@ -1,0 +1,3 @@
+# Repository URL - put your modpack manifest URL here
+# Example: https://raw.githubusercontent.com/username/repo/main
+# The mod will fetch manifest.json from this URL

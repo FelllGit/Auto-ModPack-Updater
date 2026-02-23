@@ -1,0 +1,21 @@
+{
+  "screen.automodpackupdater.title": "Mod Pack Updater",
+  "screen.automodpackupdater.checking": "Checking repository...",
+  "screen.automodpackupdater.status.fetching": "Fetching mod list from repository...",
+  "screen.automodpackupdater.status.computing": "Computing changes...",
+  "screen.automodpackupdater.status.saving": "Saving configuration...",
+  "screen.automodpackupdater.updating": "Updating mods...",
+  "screen.automodpackupdater.downloading": "Downloading %s/%s: %s",
+  "screen.automodpackupdater.speed": "%s Mbit/s",
+  "screen.automodpackupdater.complete": "Restart the game to apply changes.",
+  "screen.automodpackupdater.adding": "Adding/Updating:",
+  "screen.automodpackupdater.removing": "Removing:",
+  "screen.automodpackupdater.setup.title": "Mod Pack Setup",
+  "screen.automodpackupdater.setup.description": "Enter Git repository URL. Must have mods/ folder with .jar files at repo root.",
+  "screen.automodpackupdater.setup.repo_hint": "https://github.com/username/repo",
+  "screen.automodpackupdater.setup.error_empty": "Please enter a repository URL",
+  "screen.automodpackupdater.setup.error_invalid": "Invalid URL. Use a Git repo URL (e.g. https://github.com/username/repo)",
+  "screen.automodpackupdater.setup.error_save": "Failed to save config",
+  "gui.automodpackupdater.restart": "Close the game",
+  "gui.automodpackupdater.continue": "Continue"
+}
