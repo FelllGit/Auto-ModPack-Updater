@@ -1,4 +1,8 @@
 {
+  "automodpackupdater.kick.install_mod": "Install AutoModPackUpdater Mod",
+  "automodpackupdater.server.restart.line1": "[Mod Pack] Server mods have been updated!",
+  "automodpackupdater.server.restart.line2": "Restarting server now...",
+  "automodpackupdater.server.restart.line3": "Reconnect in a moment!",
   "screen.automodpackupdater.title": "Mod Pack Updater",
   "screen.automodpackupdater.checking": "Checking repository...",
   "screen.automodpackupdater.status.fetching": "Fetching mod list from repository...",

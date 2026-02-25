@@ -97,13 +97,21 @@ public final class ModPackUpdater {
         return ModsFolderFetcher.fetchFromFolder(repositoryUrl);
     }
 
+    public static List<String> fetchModsFromServerFolder(String repositoryUrl) throws IOException {
+        return ModsFolderFetcher.fetchFromFolder(repositoryUrl, "server");
+    }
+
     public static String getBaseUrlForDownloads(String repositoryUrl) {
+        return getBaseUrlForDownloads(repositoryUrl, "mods");
+    }
+
+    public static String getBaseUrlForDownloads(String repositoryUrl, String folder) {
         RepoUrlParser.BaseUrlInfo info = RepoUrlParser.parse(repositoryUrl);
         if (info != null) {
-            return info.baseUrl() + "mods/";
+            return info.baseUrl() + folder + "/";
         }
         String base = repositoryUrl.endsWith("/") ? repositoryUrl : repositoryUrl + "/";
-        return base.endsWith("mods/") ? base : base + "mods/";
+        return base.endsWith(folder + "/") ? base : base + folder + "/";
     }
 
     public static void downloadMod(String baseUrl, String filename, Path modsDir) throws IOException {
@@ -158,18 +166,33 @@ public final class ModPackUpdater {
 
     public static void executePlan(Path gameDirectory, String repositoryUrl, List<String> modFilenames, UpdatePlan plan)
             throws IOException {
-        executePlan(gameDirectory, repositoryUrl, modFilenames, plan, null);
+        executePlan(gameDirectory, repositoryUrl, "mods", modFilenames, plan, null);
     }
 
     public static void executePlan(Path gameDirectory, String repositoryUrl, List<String> modFilenames, UpdatePlan plan,
             Consumer<DownloadProgress> progressCallback) throws IOException {
+        executePlan(gameDirectory, repositoryUrl, "mods", modFilenames, plan, progressCallback);
+    }
+
+    public static void executeServerPlan(Path gameDirectory, String repositoryUrl, List<String> modFilenames,
+            UpdatePlan plan) throws IOException {
+        executeServerPlan(gameDirectory, repositoryUrl, modFilenames, plan, null);
+    }
+
+    public static void executeServerPlan(Path gameDirectory, String repositoryUrl, List<String> modFilenames,
+            UpdatePlan plan, Consumer<DownloadProgress> progressCallback) throws IOException {
+        executePlan(gameDirectory, repositoryUrl, "server", modFilenames, plan, progressCallback);
+    }
+
+    public static void executePlan(Path gameDirectory, String repositoryUrl, String folder, List<String> modFilenames,
+            UpdatePlan plan, Consumer<DownloadProgress> progressCallback) throws IOException {
         Path modsDir = gameDirectory.resolve("mods");
         Set<String> managed = new HashSet<>(loadManagedMods(gameDirectory));
         for (String filename : plan.getToRemove()) {
             removeMod(modsDir, filename);
             managed.remove(filename);
         }
-        String baseUrl = getBaseUrlForDownloads(repositoryUrl);
+        String baseUrl = getBaseUrlForDownloads(repositoryUrl, folder);
         List<String> toAdd = plan.getToAdd();
         int total = toAdd.size();
         int current = 0;

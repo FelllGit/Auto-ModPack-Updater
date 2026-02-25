@@ -21,59 +21,63 @@ public final class ModsFolderFetcher {
     }
 
     public static List<String> fetchFromFolder(String repositoryUrl) throws IOException {
+        return fetchFromFolder(repositoryUrl, MODS_FOLDER);
+    }
+
+    public static List<String> fetchFromFolder(String repositoryUrl, String folder) throws IOException {
         RepoUrlParser.RepoInfo info = RepoUrlParser.parseForApi(repositoryUrl);
         if (info == null) {
             throw new IOException("Unsupported repository URL. Use GitHub, GitLab, Gitea, or Codeberg.");
         }
         return switch (info.provider()) {
-            case "github" -> fetchFromGitHub(info);
-            case "gitlab" -> fetchFromGitLab(info);
-            case "codeberg", "gitea" -> fetchFromGitea(info);
+            case "github" -> fetchFromGitHub(info, folder);
+            case "gitlab" -> fetchFromGitLab(info, folder);
+            case "codeberg", "gitea" -> fetchFromGitea(info, folder);
             default -> throw new IOException("Unsupported provider: " + info.provider());
         };
     }
 
-    private static List<String> fetchFromGitHub(RepoUrlParser.RepoInfo info) throws IOException {
+    private static List<String> fetchFromGitHub(RepoUrlParser.RepoInfo info, String folder) throws IOException {
         String apiUrl = String.format("https://api.github.com/repos/%s/%s/contents/%s?ref=%s",
-                info.owner(), info.repo(), MODS_FOLDER, info.branch());
+                info.owner(), info.repo(), folder, info.branch());
         String json = fetchUrl(apiUrl, "application/vnd.github.v3+json");
         JsonElement root = JsonParser.parseString(json);
         if (!root.isJsonArray()) {
             JsonObject obj = root.getAsJsonObject();
             if (obj.has("message")) {
-                throw new IOException("mods/ folder not found: " + obj.get("message").getAsString());
+                throw new IOException(folder + "/ folder not found: " + obj.get("message").getAsString());
             }
             return List.of();
         }
         return parseJarFilenames(root.getAsJsonArray(), "file");
     }
 
-    private static List<String> fetchFromGitLab(RepoUrlParser.RepoInfo info) throws IOException {
+    private static List<String> fetchFromGitLab(RepoUrlParser.RepoInfo info, String folder) throws IOException {
         String projectPath = info.owner() + "%2F" + info.repo();
         String apiUrl = String.format("https://gitlab.com/api/v4/projects/%s/repository/tree?path=%s&ref=%s&per_page=100",
-                projectPath, MODS_FOLDER, info.branch());
+                projectPath, folder, info.branch());
         String json = fetchUrl(apiUrl, "application/json");
         JsonElement root = JsonParser.parseString(json);
         if (!root.isJsonArray()) {
             JsonObject obj = root.getAsJsonObject();
             if (obj.has("message")) {
-                throw new IOException("mods/ folder not found: " + obj.get("message").getAsString());
+                throw new IOException(folder + "/ folder not found: " + obj.get("message").getAsString());
             }
             return List.of();
         }
         return parseJarFilenames(root.getAsJsonArray(), "blob");
     }
 
-    private static List<String> fetchFromGitea(RepoUrlParser.RepoInfo info) throws IOException {
+    private static List<String> fetchFromGitea(RepoUrlParser.RepoInfo info, String folder) throws IOException {
         String baseUrl = "https://" + info.host();
         String apiUrl = String.format("%s/api/v1/repos/%s/%s/contents/%s?ref=%s",
-                baseUrl, info.owner(), info.repo(), MODS_FOLDER, info.branch());
+                baseUrl, info.owner(), info.repo(), folder, info.branch());
         String json = fetchUrl(apiUrl, "application/json");
         JsonElement root = JsonParser.parseString(json);
         if (!root.isJsonArray()) {
             JsonObject obj = root.getAsJsonObject();
             if (obj.has("message")) {
-                throw new IOException("mods/ folder not found: " + obj.get("message").getAsString());
+                throw new IOException(folder + "/ folder not found: " + obj.get("message").getAsString());
             }
             return List.of();
         }
